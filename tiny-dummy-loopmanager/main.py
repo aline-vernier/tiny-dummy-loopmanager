@@ -13,7 +13,6 @@ log.info("Starting loopWindow...")
 logging.getLogger(LOGGER_NAME).setLevel(logging.INFO)
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
-from laplace_log import uncaught_exception
 
 
 import os 

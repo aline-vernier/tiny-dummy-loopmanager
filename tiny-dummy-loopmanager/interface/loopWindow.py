@@ -1,0 +1,162 @@
+# libraries
+import pathlib
+
+from PyQt6.QtWidgets import (
+    QMainWindow, QWidget, QVBoxLayout, 
+    QHBoxLayout, QPushButton, QMessageBox, QLabel
+)
+from PyQt6.QtGui import QIcon
+import qdarkstyle
+from laplace_log import log
+
+# project
+from .panels import (
+    ExecutionPanel
+)
+from ..core.loopManager import LoopManager
+from ..utils.json_encoder import json_style
+
+
+class LoopWindow(QMainWindow):
+    
+    def __init__(self):
+
+        super().__init__() # heritage from QMainWindow
+
+        self.loop_manager = LoopManager()  # class managing the scan
+        self.set_up()  # build the window panels and buttons
+        self.actions() # defines the actions of the window
+
+
+    def set_up(self) -> None:
+        '''
+        Build the panels and buttons of the main loop window.
+        '''        
+        p = pathlib.Path(__file__) # path to the current file
+        
+        # set title, geometry and style
+        self.setWindowTitle("Loop Window")
+        self.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt6'))
+        self.setGeometry(100, 30, 1250, 900)
+
+        # icon
+        icon_path = p.parent / 'icons' # path to the icon folder
+        self.setWindowIcon( QIcon( str(icon_path / 'LOA.png') ) )
+
+        # central widget and layout
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        main_layout = QVBoxLayout(central_widget)
+
+        # Block 1: Server and Reader modes
+        self.execution_panel = ExecutionPanel()
+        main_layout.addWidget(self.execution_panel)
+
+        # Block 5: Start and Stop buttons
+        bottom_layout = QHBoxLayout()
+
+        bottom_layout.addStretch()
+        self.step_label = QLabel("Step: -/-")
+        self.step_label.setStyleSheet("font-weight: bold;")
+        bottom_layout.addWidget(self.step_label)
+        # state label
+        self.status_label = QLabel("🟢 Ready")
+        self.status_label.setStyleSheet("font-weight: bold;")
+        bottom_layout.addWidget(self.status_label)
+        # Stop
+        self.stop_button = QPushButton("Stop")
+        self.stop_button.setFixedWidth(120)
+        bottom_layout.addWidget(self.stop_button)
+            # Start
+        self.start_button = QPushButton("Start")
+        self.start_button.setFixedWidth(120)
+        bottom_layout.addWidget(self.start_button)
+
+        main_layout.addLayout(bottom_layout)
+
+    
+    def actions(self) -> None:
+        '''
+        Defines the actions between the several panels and
+        make the bridget with the loop manager.
+        '''
+        # Start and Stop buttons
+        self.start_button.clicked.connect(self.on_start)
+        self.stop_button.clicked.connect(self.on_stop)
+
+
+    def on_start(self) -> None:
+        '''
+        Function used when 'start_button' is pressed. Create a 
+        config dictionary gathering the panel informations and 
+        transmit it to the loop manager.
+
+        Check if the panel informations are sufficient to continue,
+        raise error and warning message box if needed.
+        '''
+        log.debug("Start button pressed.")
+
+        # gather the panel informations
+        execution = self.execution_panel.get_execution()
+
+
+
+        log.info("Starting scan")
+        self.set_loop_state(True)
+
+
+
+    def on_stop(self) -> None:
+        '''
+        Function used when 'stop_button' is pressed.
+        '''
+        log.debug("Stop button pressed.")
+
+        self.set_loop_state(False)
+    
+
+    def on_max_iteration_reached(self) -> None:
+        '''
+        Maximum iteration set a initialization is reached.
+        '''
+        log.debug("The maximum number of iterations has been reached. Stopping the process...")
+
+        self.opt_manager.stop_loop()
+        self.set_opt_state(False)
+
+        QMessageBox.warning(
+            self,
+            "End criterium",
+            "Maximum iteration reached."
+        )
+    
+
+
+
+    
+    def set_loop_state(self, scanning: bool):
+        if scanning:
+            self.status_label.setText("🟡 Scannng...")
+            self.status_label.setStyleSheet("color: orange; font-weight: bold;")
+            self.start_button.setEnabled(False)      # lock the start button
+            self.execution_panel.set_locked(True)    # lock the ExecutionPanel
+            
+        else:
+            self.status_label.setText("🟢 Ready")
+            self.status_label.setStyleSheet("color: green; font-weight: bold;")
+            self.start_button.setEnabled(True)      # unlock the start button
+            self.execution_panel.set_locked(False)  # unlock the ExecutionPanel
+
+
+
+    def closeEvent(self, event) -> None:
+        '''
+        Function called when the window is closing.
+        
+        Close the server stored in 'LoopManager'.
+        '''
+      
+
+        
+        event.accept()
