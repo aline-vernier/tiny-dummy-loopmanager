@@ -11,19 +11,19 @@ from laplace_log import log
 
 # project
 from .panels import (
-    ExecutionPanel
+    ExecutionPanel, ActuatorsPanel
 )
-from ..core.loopManager import LoopManager
+from ..core.scanManager import ScanManager
 from ..utils.json_encoder import json_style
 
 
-class LoopWindow(QMainWindow):
+class ScanWindow(QMainWindow):
     
     def __init__(self):
 
         super().__init__() # heritage from QMainWindow
 
-        self.loop_manager = LoopManager()  # class managing the scan
+        self.scan_manager = ScanManager()  # class managing the scan
         self.set_up()  # build the window panels and buttons
         self.actions() # defines the actions of the window
 
@@ -35,9 +35,9 @@ class LoopWindow(QMainWindow):
         p = pathlib.Path(__file__) # path to the current file
         
         # set title, geometry and style
-        self.setWindowTitle("Loop Window")
+        self.setWindowTitle("Scan Window")
         self.setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt6'))
-        self.setGeometry(100, 30, 1250, 900)
+        self.setGeometry(100, 30, 900, 300)
 
         # icon
         icon_path = p.parent / 'icons' # path to the icon folder
@@ -52,6 +52,10 @@ class LoopWindow(QMainWindow):
         # Block 1: Server and Reader modes
         self.execution_panel = ExecutionPanel()
         main_layout.addWidget(self.execution_panel)
+
+        # Block 2: Actuators panel (empty at startup)
+        self.actuators_panel = ActuatorsPanel()
+        main_layout.addWidget(self.actuators_panel)
 
         # Block 5: Start and Stop buttons
         bottom_layout = QHBoxLayout()
@@ -84,7 +88,29 @@ class LoopWindow(QMainWindow):
         # Start and Stop buttons
         self.start_button.clicked.connect(self.on_start)
         self.stop_button.clicked.connect(self.on_stop)
+        self.execution_panel.server_state_changed.connect(
+            self.scan_manager.server_launch
+        )
 
+        # transmit the server address from the server to the ExecutionPanel
+        self.scan_manager.on_server_address.connect(
+            self.execution_panel.set_server_address
+        )
+
+        # Signal coming from scan manager, passed on from ServerController, 
+        # emitted in callback function called by ServerLHC instance 
+        self.scan_manager.on_actuators_dict_received.connect(
+            self.actuators_panel.add_actuator_dict_widget
+
+            
+        )
+        self.scan_manager.on_actuators_position_update_received.connect(
+            self.print_dict           
+        )
+        
+
+    def print_dict(dictionary : dict):
+        print(f'Dictionary: {dictionary}')
 
     def on_start(self) -> None:
         '''
@@ -122,7 +148,7 @@ class LoopWindow(QMainWindow):
         '''
         log.debug("The maximum number of iterations has been reached. Stopping the process...")
 
-        self.opt_manager.stop_loop()
+        self.scan_manager.stop_scan()
         self.set_opt_state(False)
 
         QMessageBox.warning(
@@ -154,9 +180,9 @@ class LoopWindow(QMainWindow):
         '''
         Function called when the window is closing.
         
-        Close the server stored in 'LoopManager'.
+        Close the server stored in 'OptManager'.
         '''
-      
-
+        if self.execution_panel.is_online_enabled():
+            self.scan_manager.server_launch(server_state=False)
         
         event.accept()

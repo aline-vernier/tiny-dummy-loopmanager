@@ -1,5 +1,5 @@
-from .loopWindow import LoopWindow
+from .scanWindow import ScanWindow
 
 __all__ = [
-    "LoopWindow"
+    "ScanWindow"
 ]
