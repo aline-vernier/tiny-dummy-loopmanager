@@ -30,24 +30,45 @@ class ActuatorsPanel(QGroupBox):
         self.list_widget = QListWidget()   # create the widget list
         panel_layout.addWidget(self.list_widget)  # add the widget list to the layout
 
-    def add_actuator_dict_widget(self, actuators_dict: dict):
-        '''
-        actuators_dict must have format :
-        {'address':[name list], ...}
-        '''
-        for address, name_list in actuators_dict.items():
-            for name in name_list :
-                self.add_actuator_widget(address, name)
+    def update_actuator_widget(self, address: str, status: dict) -> None:
+        for motor in status['motors']:
+                    name = motor['name']
+                    position = motor['position']
+                    try : 
+                        actuator_widgets = self.actuator_widgets[address]
+                    except Exception as e :
+                        log.error(f'self.actuator_widgets[address] could not be accessed {e}')
+                        return
+                    try : 
+                        widget = actuator_widgets[name]
+                    except Exception as e: 
+                        log.error(f'actuator_widgets[name] could not be accessed {e}')
+                        return
+                    try : 
+                        widget.update_position(position)
+                    except Exception as e:
+                        log.error(f'Could not update position: {e}')
+                    
 
+    def add_actuator_widgets_from_status(self, address: str, status: dict) -> None:
+        for motor in status['motors']:
+            name = motor['name']
+            position = motor['position']
+            self.add_actuator_widget(address, name, position)
+            
 
-    def add_actuator_widget(self, address: str, name: str):
+    def add_actuator_widget(self, address: str, name: str, position: float):
         new_widget = ActuatorControlWidget(address=address, name=name)
 
-        self.actuator_widgets[address]={name : new_widget}
+        self.actuator_widgets.setdefault(address, {})[name] = new_widget
         item = QListWidgetItem(self.list_widget)          # create a new list item
         item.setSizeHint(new_widget.sizeHint())           # set the size of the item
         self.list_widget.addItem(item)                    # add the new item in the list
         self.list_widget.setItemWidget(item, new_widget)  # assign the new widget to the item
+        try: 
+            self.actuator_widgets[address][name].update_position(position)
+        except Exception as e:
+            log.error(f'Could not update position {e}')
 
     def actions(self):
         pass

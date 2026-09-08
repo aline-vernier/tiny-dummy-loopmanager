@@ -30,17 +30,10 @@ class DiagnosticPanel(QGroupBox):
         self.list_widget = QListWidget()   # create the widget list
         panel_layout.addWidget(self.list_widget)  # add the widget list to the layout
 
-    def add_actuator_dict_widget(self, actuators_dict: dict):
-        '''
-        actuators_dict must have format :
-        {'address':[name list], ...}
-        '''
-        for address, name_list in actuators_dict.items():
-            for name in name_list :
-                self.add_actuator_widget(address, name)
 
 
-    def add_actuator_widget(self, address: str, name: str):
+
+    def add_diagnostic_widget(self, address: str, name: str):
         new_widget = DiagnosticControlWidget(address=address, name=name)
 
         self.actuator_widgets[address]={name : new_widget}

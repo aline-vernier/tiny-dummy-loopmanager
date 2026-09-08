@@ -26,6 +26,7 @@ class ScanWindow(QMainWindow):
         self.scan_manager = ScanManager()  # class managing the scan
         self.set_up()  # build the window panels and buttons
         self.actions() # defines the actions of the window
+        self.actuators = dict({})
 
 
     def set_up(self) -> None:
@@ -100,17 +101,27 @@ class ScanWindow(QMainWindow):
         # Signal coming from scan manager, passed on from ServerController, 
         # emitted in callback function called by ServerLHC instance 
         self.scan_manager.on_actuators_dict_received.connect(
-            self.actuators_panel.add_actuator_dict_widget
-
-            
+            self.update_actuators
         )
+
         self.scan_manager.on_actuators_position_update_received.connect(
-            self.print_dict           
+            self.print_dict          
         )
-        
 
-    def print_dict(dictionary : dict):
-        print(f'Dictionary: {dictionary}')
+    def update_actuators(self, actuators_dict: dict) -> None:
+        
+        for address, status in actuators_dict.items():
+            if self.actuators.get(address) is not None:
+                self.actuators_panel.update_actuator_widget(address, status)
+
+            else: 
+                self.actuators[address]=status
+                log.info(f'Motor status at {address} in scan window: {status}')
+                self.actuators_panel.add_actuator_widgets_from_status(address, status)
+                    
+
+    def print_dict(self, dictionary : dict):
+        log.info(f'Received dictionary {dictionary}')
 
     def on_start(self) -> None:
         '''

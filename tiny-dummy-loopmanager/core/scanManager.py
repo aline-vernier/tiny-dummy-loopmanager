@@ -49,7 +49,7 @@ class ScanManager(QObject):
                 empty_data_after_get=True
             )
 
-            # define the functions used by the server on specific messages
+            # define the functions used by the server on specific messages. 
                 
                 # when the CMD_SAVE is received, emit a signal to change the saving path
             self.serv.set_on_saving_path_changed(
@@ -63,7 +63,10 @@ class ScanManager(QObject):
             self.serv.set_on_set_actuators(
                 self.server_controller.on_set_actuators
             )
-            
+
+            self.serv.set_on_update_actuator_positions(
+                self.server_controller.on_new_actuator_pos_received
+            )
            
 
             self.serv.start() # start the server
@@ -82,16 +85,16 @@ class ScanManager(QObject):
         Configures the actuators on the interface from list of available actuators in Master
         Signal comes from server controller 
         '''
-        self.serv.set_on_update_actuator_positions(
-                self.server_controller.on_new_actuator_pos_received
-        )
+
         
         self.server_controller.set_actuators_dict_received.connect(
             self.on_actuators_dict_received
         ) 
         log.info(f'Configure actuator callable')
+
+        
         try: 
-            self.server_controller.scan_actuators_pos_update.connect(
+            self.server_controller.actuators_pos_update_received.connect(
                     self.on_actuators_position_update_received
                 )
         except Exception as e:

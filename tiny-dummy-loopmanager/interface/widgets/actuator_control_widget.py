@@ -150,7 +150,10 @@ class ActuatorControlWidget(QWidget):
         self.min_spin.valueChanged.connect(self.update_min_max)
         self.max_spin.valueChanged.connect(self.update_min_max)
 
+    def update_position(self, position: float)-> None:
+        self.current_pos_spin.setValue(position)
 
+        
     def on_state_changed(self, enabled: bool) -> None:
         '''
         '''
