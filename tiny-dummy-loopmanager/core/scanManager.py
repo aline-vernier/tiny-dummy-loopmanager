@@ -14,6 +14,8 @@ class ScanManager(QObject):
     on_server_address = pyqtSignal(str)  # transmit the scan server address
     on_actuators_dict_received = pyqtSignal(dict) 
     on_actuators_position_update_received = pyqtSignal(dict) 
+    on_diagnostics_dict_received = pyqtSignal(dict) 
+
     
     def __init__(self):
         super().__init__()

@@ -13,12 +13,12 @@ from ...utils.config_helper import get_from_config, set_in_config
 from ..widgets.diagnostic_control_widget import DiagnosticControlWidget
 
 
-class DiagnosticPanel(QGroupBox):
+class DiagnosticsPanel(QGroupBox):
 
     def __init__(self):        
         super().__init__("Actuators (motors, gas, etc.)")
 
-        self.actuator_widgets = dict({})
+        self.diagnostic_widgets = dict({})
         self.set_up()  # build the elements
         self.actions() # defines the panel actions
 
@@ -36,7 +36,7 @@ class DiagnosticPanel(QGroupBox):
     def add_diagnostic_widget(self, address: str, name: str):
         new_widget = DiagnosticControlWidget(address=address, name=name)
 
-        self.actuator_widgets[address]={name : new_widget}
+        self.diagnostic_widgets[address]={name : new_widget}
         item = QListWidgetItem(self.list_widget)          # create a new list item
         item.setSizeHint(new_widget.sizeHint())           # set the size of the item
         self.list_widget.addItem(item)                    # add the new item in the list
@@ -48,15 +48,15 @@ class DiagnosticPanel(QGroupBox):
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
-    window = ActuatorsPanel()
+    window = DiagnosticsPanel()
     
-    actuators = {'tcp://147.250.140.85:5555': ['name1', 'name2', 'name3'], 
+    diagnostics = {'tcp://147.250.140.85:5555': ['name1', 'name2', 'name3'], 
             'tcp://147.250.140.86:5555': ['name4', 'name5', 'name6'],
             'tcp://147.250.140.87:5555': ['name', 'name_', 'name+']}
 
-    for address, name_list in actuators.items():
+    for address, name_list in diagnostics.items():
         for name in name_list :
-            window.add_actuator_widget(address, name)
+            window.add_diagnostic_widget(address, name)
     window.resize(350, 150)
     window.show()
 

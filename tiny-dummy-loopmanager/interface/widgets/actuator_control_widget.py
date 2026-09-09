@@ -153,6 +153,12 @@ class ActuatorControlWidget(QWidget):
     def update_position(self, position: float)-> None:
         self.current_pos_spin.setValue(position)
 
+    def update_status_available(self, available: bool)-> None:
+        if available:
+            self.state_icon.setPixmap(self.connected_icon.pixmap(16, 16)) 
+        else:
+            self.state_icon.setPixmap(self.disconnected_icon.pixmap(16, 16)) 
+
         
     def on_state_changed(self, enabled: bool) -> None:
         '''

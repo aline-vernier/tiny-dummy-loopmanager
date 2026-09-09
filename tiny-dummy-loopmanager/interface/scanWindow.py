@@ -11,7 +11,7 @@ from laplace_log import log
 
 # project
 from .panels import (
-    ExecutionPanel, ActuatorsPanel
+    ExecutionPanel, ActuatorsPanel, DiagnosticsPanel
 )
 from ..core.scanManager import ScanManager
 from ..utils.json_encoder import json_style
@@ -57,6 +57,11 @@ class ScanWindow(QMainWindow):
         # Block 2: Actuators panel (empty at startup)
         self.actuators_panel = ActuatorsPanel()
         main_layout.addWidget(self.actuators_panel)
+
+        # Block 3: Diagnostics panel (empty at startup)
+        self.diagnostics_panel = DiagnosticsPanel()
+        main_layout.addWidget(self.diagnostics_panel)
+
 
         # Block 5: Start and Stop buttons
         bottom_layout = QHBoxLayout()
@@ -108,17 +113,44 @@ class ScanWindow(QMainWindow):
             self.print_dict          
         )
 
-    def update_actuators(self, actuators_dict: dict) -> None:
+    # def update_actuators(self, actuators_dict: dict) -> None:
         
-        for address, status in actuators_dict.items():
-            if self.actuators.get(address) is not None:
-                self.actuators_panel.update_actuator_widget(address, status)
+    #     for address, status in actuators_dict.items():
+    #         if self.actuators.get(address) is not None:
+    #             self.actuators_panel.update_actuator_widget(address, status)
 
-            else: 
-                self.actuators[address]=status
-                log.info(f'Motor status at {address} in scan window: {status}')
-                self.actuators_panel.add_actuator_widgets_from_status(address, status)
-                    
+    #         else: 
+    #             self.actuators[address]=status
+    #             log.info(f'Motor status at {address} in scan window: {status}')
+    #             self.actuators_panel.add_actuator_widgets_from_status(address, status)
+
+    def update_actuators(self, actuators_dict: dict) -> None:
+
+        # 1. Find motor servers that used to exist but are no longer available
+        removed_addresses = set(self.actuators) - set(actuators_dict)
+
+        for address in removed_addresses:
+            log.info(f'Motor server at {address} is no longer available')
+            self.actuators_panel.update_actuators_unavailable(address)
+
+
+        # 2. Add new servers and update existing ones
+        try  :
+            for address, status in actuators_dict.items():
+
+                if address in self.actuators:
+                    self.actuators_panel.update_actuator_widget(address, status)
+
+                else:
+                    self.actuators[address] = status
+                    log.info(f'Motor status at {address} in scan window: {status}')
+                    self.actuators_panel.add_actuator_widgets_from_status(
+                        address, status
+                    )
+        except Exception as e :
+            log.error(f'Could not update actuator GUI, error {e} occurred')
+
+
 
     def print_dict(self, dictionary : dict):
         log.info(f'Received dictionary {dictionary}')

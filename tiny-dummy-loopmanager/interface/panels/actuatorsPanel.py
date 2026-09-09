@@ -46,8 +46,15 @@ class ActuatorsPanel(QGroupBox):
                         return
                     try : 
                         widget.update_position(position)
+                        widget.update_status_available(True)
                     except Exception as e:
                         log.error(f'Could not update position: {e}')
+
+    def update_actuators_unavailable(self, address:str) -> None:
+        actuator_widgets = self.actuator_widgets.get(address)
+        log.info(f'Actuator widgets: {actuator_widgets}')
+        for widget in actuator_widgets.values():
+            widget.update_status_available(False)
                     
 
     def add_actuator_widgets_from_status(self, address: str, status: dict) -> None:
