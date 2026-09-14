@@ -66,6 +66,10 @@ class ScanManager(QObject):
                 self.server_controller.on_set_actuators
             )
 
+            self.serv.set_on_set_diagnostics(
+                self.server_controller.on_set_diagnostics
+            )
+
             self.serv.set_on_update_actuator_positions(
                 self.server_controller.on_new_actuator_pos_received
             )
@@ -76,6 +80,7 @@ class ScanManager(QObject):
             # emit a signal to transmit the server address to the ExecutionPanel
             self.on_server_address.emit(f"{self.serv.server_ip}:{self.serv.server_port}")
             self.configure_actuators()
+            self.configure_diagnostics()
         
         else:                # else means server off
             self.serv.stop() # stop the server
@@ -101,6 +106,21 @@ class ScanManager(QObject):
                 )
         except Exception as e:
             log.error(f'Exception {e} occurred on registering position update')
+
+    def configure_diagnostics(self) -> None:
+        '''
+        Configure actuators .
+        Configures the actuators on the interface from list of available actuators in Master
+        Signal comes from server controller 
+        '''
+
+        
+        self.server_controller.set_diagnostics_dict_received.connect(
+            self.on_diagnostics_dict_received
+        ) 
+        log.info(f'Configure diagnostics callable')
+
+        
 
 
     def start_scan(self):

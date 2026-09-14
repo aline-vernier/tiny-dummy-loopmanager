@@ -14,7 +14,8 @@ from .panels import (
     ExecutionPanel, ActuatorsPanel, DiagnosticsPanel
 )
 from ..core.scanManager import ScanManager
-from ..utils.json_encoder import json_style
+
+from ..utils.format_dict import format_plottable_data_dict
 
 
 class ScanWindow(QMainWindow):
@@ -27,6 +28,8 @@ class ScanWindow(QMainWindow):
         self.set_up()  # build the window panels and buttons
         self.actions() # defines the actions of the window
         self.actuators = dict({})
+        self.diagnostics = dict({})
+
 
 
     def set_up(self) -> None:
@@ -109,20 +112,11 @@ class ScanWindow(QMainWindow):
             self.update_actuators
         )
 
-        self.scan_manager.on_actuators_position_update_received.connect(
-            self.print_dict          
+        self.scan_manager.on_diagnostics_dict_received.connect(
+            self.update_diagnostics
         )
 
-    # def update_actuators(self, actuators_dict: dict) -> None:
-        
-    #     for address, status in actuators_dict.items():
-    #         if self.actuators.get(address) is not None:
-    #             self.actuators_panel.update_actuator_widget(address, status)
 
-    #         else: 
-    #             self.actuators[address]=status
-    #             log.info(f'Motor status at {address} in scan window: {status}')
-    #             self.actuators_panel.add_actuator_widgets_from_status(address, status)
 
     def update_actuators(self, actuators_dict: dict) -> None:
 
@@ -150,10 +144,13 @@ class ScanWindow(QMainWindow):
         except Exception as e :
             log.error(f'Could not update actuator GUI, error {e} occurred')
 
+    def update_diagnostics(self, diagnostics_dict: dict):
+        
+        plottables = format_plottable_data_dict(diagnostics_dict)
+        if plottables:
+            log.debug(f'Plottables {plottables}')
 
 
-    def print_dict(self, dictionary : dict):
-        log.info(f'Received dictionary {dictionary}')
 
     def on_start(self) -> None:
         '''

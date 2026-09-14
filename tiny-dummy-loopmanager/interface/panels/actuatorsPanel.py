@@ -52,7 +52,7 @@ class ActuatorsPanel(QGroupBox):
 
     def update_actuators_unavailable(self, address:str) -> None:
         actuator_widgets = self.actuator_widgets.get(address)
-        log.info(f'Actuator widgets: {actuator_widgets}')
+        log.debug(f'Actuator widgets: {actuator_widgets}')
         for widget in actuator_widgets.values():
             widget.update_status_available(False)
                     
