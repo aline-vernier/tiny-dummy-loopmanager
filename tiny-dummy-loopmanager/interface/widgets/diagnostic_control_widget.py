@@ -2,7 +2,7 @@
 import pathlib
 
 from PyQt6.QtWidgets import (
-    QWidget, QHBoxLayout, QCheckBox, QLabel, QDoubleSpinBox, QApplication
+    QWidget, QHBoxLayout, QComboBox, QLabel, QDoubleSpinBox, QApplication
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
@@ -16,17 +16,21 @@ class DiagnosticControlWidget(QWidget):
     Define the diagnostic control line. 
     '''
 
-    def __init__(self, address: str, name: str):
+    def __init__(self, address: str, name: str, plottables: dict):
         '''
             Args:
-                definition: address 
+                definition: 
+                    address: IP address of diag server
+                    name: diag name
+                    plottables: dictionary of format {'plottable_1':float, ..., 'plottable_n':float}
         '''
         super().__init__() # Inheritance from QWidget
         self.address = None
         self.name = None 
+        self.plottables = None
 
         try : 
-            self.define(address, name)
+            self.define(address, name, plottables)
         except Exception as e:
             log.error(f'Could not define diagnostic, invalid definition')
             log.error(f'Exception: {e}')
@@ -34,12 +38,13 @@ class DiagnosticControlWidget(QWidget):
         self.set_up()  # builds the input widget
         self.actions() # defines the actions of InputWidget
 
-    def define(self, address: str, name: str):
+    def define(self, address: str, name: str, plottables: dict):
         if not validate_address(address):
             raise ValueError(f'{address} is not a valid address')
         else: 
             self.address = address
             self.name = name
+            self.plottables = plottables
 
 
     def set_up(self) -> None:
@@ -64,19 +69,7 @@ class DiagnosticControlWidget(QWidget):
         self.state_icon.setToolTip("Current state")
         line_layout.addWidget(self.state_icon)
 
-        # scan
-        self.scan_checkbox = QCheckBox()
-        self.scan_checkbox.setToolTip(f"Check this box to scan")
-        self.scan_checkbox.setFixedWidth(20)
-        line_layout.addWidget(self.scan_checkbox)
 
-        # scanning rank
-        self.rank_input =  QDoubleSpinBox()
-        self.rank_input.setMinimum(0)
-        self.rank_input.setMaximum(10)
-        self.rank_input.setFixedWidth(70)
-        self.rank_input.setToolTip(f"Rank 0 outer, rank 1 inner - defined as in a for loop")
-        line_layout.addWidget(self.rank_input)
 
         # ip_port
         self.address_label = QLabel()
@@ -92,62 +85,21 @@ class DiagnosticControlWidget(QWidget):
         self.name_label.setToolTip("Actuator name")
         line_layout.addWidget(self.name_label)
 
-        # position 
+        # Plottables
+        self.plottables_combobox = QComboBox()
+        for plottable_name in self.plottables:
+            self.plottables_combobox.addItem(plottable_name)
+            
+        line_layout.addWidget(self.plottables_combobox)
 
-        self.current_pos_spin = QDoubleSpinBox()
-        self.current_pos_spin.setDecimals(6)
-        self.current_pos_spin.setEnabled(False)
-        self.current_pos_spin.setFixedWidth(70)
-        self.current_pos_spin.setToolTip("Lower bound")
-        line_layout.addWidget(self.current_pos_spin)
 
-        # Min spinBox
-        self.min_spin = QDoubleSpinBox()
-        self.min_spin.setDecimals(6)
-        self.min_spin.setEnabled(False)
-        self.min_spin.setFixedWidth(70)
-        self.min_spin.setToolTip("Lower bound")
-        line_layout.addWidget(self.min_spin)
-
-        # Max spinBox
-        self.max_spin = QDoubleSpinBox()
-        self.max_spin.setDecimals(6)
-        self.max_spin.setEnabled(False)
-        self.max_spin.setFixedWidth(70)
-        self.max_spin.setToolTip("Higher bound")
-        line_layout.addWidget(self.max_spin)
-
-        # Stepsize spinBox
-        self.stepsize_spin = QDoubleSpinBox()
-        self.stepsize_spin.setDecimals(6)
-        self.stepsize_spin.setEnabled(False)
-        self.stepsize_spin.setFixedWidth(70)
-        self.stepsize_spin.setToolTip("Step size")
-        line_layout.addWidget(self.stepsize_spin)
-
-        # Unit
-        self.unit_label = QLabel()
-        self.unit_label.setText("Unknown")
-        self.unit_label.setFixedWidth(60)
-        self.unit_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.unit_label.setToolTip("Input unit")
-        line_layout.addWidget(self.unit_label)
 
 
     def actions(self) -> None:
         '''
         Defines the actions of the InputWidget class.
         '''
-        # when the input state is changed, change the icon and enable / disable the spin boxes
-        self.scan_checkbox.stateChanged.connect(self.on_state_changed)
-        
-        # when the spin boxes are updated, change the input instance boundaries
-        self.min_spin.valueChanged.connect(self.update_instance_bounds)
-        self.max_spin.valueChanged.connect(self.update_instance_bounds)
-
-        # when the spin boxes are updated, change the spin boxes range
-        self.min_spin.valueChanged.connect(self.update_min_max)
-        self.max_spin.valueChanged.connect(self.update_min_max)
+        pass
 
 
     def on_state_changed(self, enabled: bool) -> None:
@@ -170,12 +122,3 @@ class DiagnosticControlWidget(QWidget):
 
 
 
-if __name__ == "__main__":
-    import sys
-
-    app = QApplication(sys.argv)
-    window = ActuatorControlWidget('147.250.140.85:7531', 'name')
-    window.resize(350, 150)
-    window.show()
-
-    sys.exit(app.exec())

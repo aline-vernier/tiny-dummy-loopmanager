@@ -33,14 +33,17 @@ class DiagnosticsPanel(QGroupBox):
 
 
 
-    def add_diagnostic_widget(self, address: str, name: str):
-        new_widget = DiagnosticControlWidget(address=address, name=name)
+    def add_diagnostic_widget(self, address: str, name: str, plottables: dict):
+        new_widget = DiagnosticControlWidget(address=address, name=name, plottables= plottables)
 
         self.diagnostic_widgets[address]={name : new_widget}
         item = QListWidgetItem(self.list_widget)          # create a new list item
         item.setSizeHint(new_widget.sizeHint())           # set the size of the item
         self.list_widget.addItem(item)                    # add the new item in the list
         self.list_widget.setItemWidget(item, new_widget)  # assign the new widget to the item
+
+    def update_diagnostic_unavailable(self, address):
+        pass
 
     def actions(self):
         pass

@@ -15,7 +15,7 @@ from .panels import (
 )
 from ..core.scanManager import ScanManager
 
-from ..utils.format_dict import format_plottable_data_dict
+from ..utils.diagnostic_utils import format_plottable_data_dict
 
 
 class ScanWindow(QMainWindow):
@@ -146,9 +146,32 @@ class ScanWindow(QMainWindow):
 
     def update_diagnostics(self, diagnostics_dict: dict):
         
-        plottables = format_plottable_data_dict(diagnostics_dict)
+        address, name, plottables = format_plottable_data_dict(diagnostics_dict)
+        # plottables is a dictionary of format {'plottable_1':float, ..., 'plottable_n':float}
         if plottables:
             log.debug(f'Plottables {plottables}')
+
+        
+        # 1. Find motor servers that used to exist but are no longer available
+        removed_addresses = set(self.diagnostics) - set(diagnostics_dict)
+
+        for address in removed_addresses:
+            log.info(f'Diagnostic at {address} is no longer available')
+            self.diagnostics_panel.update_diagnostic_unavailable(address)
+
+
+        # 2. Add new servers and update existing ones
+        try  :
+
+            if address in self.diagnostics:
+                pass
+
+            else:
+                self.diagnostics[address] = {'name': name, 'plottables': plottables}
+                log.info(f'Actuator plottables at {address} in scan window: {plottables}')
+                self.diagnostics_panel.add_diagnostic_widget(address, name, plottables)
+        except Exception as e :
+            log.error(f'Could not update actuator GUI, error {e} occurred')
 
 
 

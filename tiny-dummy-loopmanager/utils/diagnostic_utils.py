@@ -1,15 +1,21 @@
 
-def format_plottable_data_dict(data: dict) -> dict:
-    plottable_data_dict = {}
 
-    for address_dictionary in data.values():
+def format_plottable_data_dict(data: dict):
+    plottables = {}
+
+    for address, address_dictionary in data.items():
         name = address_dictionary['name']
+        if type(address_dictionary) is not dict:
+            raise ValueError(f'Wrong data dictionary format')
 
         for key, value in address_dictionary['data'].items():
             if type(value) is float:
-                plottable_data_dict[key] = value
+                plottables[key] = value
 
-    return plottable_data_dict
+    return address, name, plottables
+
+
+
 
 
 if __name__ == "__main__":
