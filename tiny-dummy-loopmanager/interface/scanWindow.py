@@ -144,34 +144,56 @@ class ScanWindow(QMainWindow):
         except Exception as e :
             log.error(f'Could not update actuator GUI, error {e} occurred')
 
-    def update_diagnostics(self, diagnostics_dict: dict):
-        
-        address, name, plottables = format_plottable_data_dict(diagnostics_dict)
-        # plottables is a dictionary of format {'plottable_1':float, ..., 'plottable_n':float}
-        if plottables:
-            log.debug(f'Plottables {plottables}')
+    def update_diagnostics(self, diagnostics_dict: dict) -> None:
 
-        
-        # 1. Find motor servers that used to exist but are no longer available
         removed_addresses = set(self.diagnostics) - set(diagnostics_dict)
 
         for address in removed_addresses:
-            log.info(f'Diagnostic at {address} is no longer available')
-            self.diagnostics_panel.update_diagnostic_unavailable(address)
+            log.info(f'Diag server at {address} is no longer available')
+            #self.actuators_panel.update_actuators_unavailable(address)
 
 
         # 2. Add new servers and update existing ones
         try  :
+            for address, status in diagnostics_dict.items():
 
-            if address in self.diagnostics:
-                pass
+                if address in self.diagnostics:
+                    pass
 
-            else:
-                self.diagnostics[address] = {'name': name, 'plottables': plottables}
-                log.info(f'Actuator plottables at {address} in scan window: {plottables}')
-                self.diagnostics_panel.add_diagnostic_widget(address, name, plottables)
+                else:
+                    self.diagnostics[address] = status
+                    self.diagnostics_panel.add_diagnostic_widgets_from_status(
+                        address, status
+                    )
         except Exception as e :
-            log.error(f'Could not update actuator GUI, error {e} occurred')
+            log.error(f'Could not update diag GUI, error {e} occurred')
+
+        # removed_addresses = set(self.diagnostics) - set(diagnostics_dict)
+
+        # for address in removed_addresses:
+        #     log.debug(f'Diagnostic at {address} is no longer available')
+        #     self.diagnostics_panel.update_diagnostic_unavailable(address)
+
+        # if diagnostics_dict: 
+        #     address, name, plottables = format_plottable_data_dict(diagnostics_dict)
+        #     # plottables is a dictionary of format {'plottable_1':float, ..., 'plottable_n':float}
+        #     if plottables:
+        #         log.debug(f'Plottables {plottables}')
+           
+        #     # 2. Add new servers and update existing ones
+        #     try  :
+
+        #         if address in self.diagnostics:
+        #             self.diagnostics_panel.update_diagnostic_widget(address, True)
+
+        #         else:
+        #             self.diagnostics[address] = {'name': name, 'plottables': plottables}
+        #             log.info(f'Actuator plottables at {address} in scan window: {plottables}')
+        #             self.diagnostics_panel.add_diagnostic_widget(address, name, plottables)
+        #     except Exception as e :
+        #         log.error(f'Could not update actuator GUI, error {e} occurred')
+        # else:
+        #     pass
 
 
 

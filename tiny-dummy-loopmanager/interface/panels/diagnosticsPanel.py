@@ -31,19 +31,28 @@ class DiagnosticsPanel(QGroupBox):
         panel_layout.addWidget(self.list_widget)  # add the widget list to the layout
 
 
-
+    def add_diagnostic_widgets_from_status(self, address:str, status: dict):
+        log.info(f'Adding diag widget from status {status}')
 
     def add_diagnostic_widget(self, address: str, name: str, plottables: dict):
         new_widget = DiagnosticControlWidget(address=address, name=name, plottables= plottables)
 
-        self.diagnostic_widgets[address]={name : new_widget}
+        
+        self.diagnostic_widgets.setdefault(address, {})[name] = new_widget
         item = QListWidgetItem(self.list_widget)          # create a new list item
         item.setSizeHint(new_widget.sizeHint())           # set the size of the item
         self.list_widget.addItem(item)                    # add the new item in the list
         self.list_widget.setItemWidget(item, new_widget)  # assign the new widget to the item
 
+
+    def update_diagnostic_widget(self, address: str, status: dict) -> None:
+        log.info(f'Status at address {address} is {status}')
+
     def update_diagnostic_unavailable(self, address):
-        pass
+        diagnostic_widgets = self.diagnostic_widgets.get(address)
+        log.debug(f'Diagnostic widgets: {diagnostic_widgets}')
+        for widget in diagnostic_widgets.values():
+            widget.update_status_available(False)
 
     def actions(self):
         pass
