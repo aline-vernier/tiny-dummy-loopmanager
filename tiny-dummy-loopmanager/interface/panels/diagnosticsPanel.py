@@ -31,14 +31,10 @@ class DiagnosticsPanel(QGroupBox):
         panel_layout.addWidget(self.list_widget)  # add the widget list to the layout
 
 
-    def add_diagnostic_widgets_from_status(self, address:str, status: dict):
-        log.info(f'Adding diag widget from status {status}')
+    def add_diagnostic_widgets_from_status(self, address: str, status: dict):
+        new_widget = DiagnosticControlWidget(address=address, status=status)
 
-    def add_diagnostic_widget(self, address: str, name: str, plottables: dict):
-        new_widget = DiagnosticControlWidget(address=address, name=name, plottables= plottables)
-
-        
-        self.diagnostic_widgets.setdefault(address, {})[name] = new_widget
+        self.diagnostic_widgets[address] = new_widget
         item = QListWidgetItem(self.list_widget)          # create a new list item
         item.setSizeHint(new_widget.sizeHint())           # set the size of the item
         self.list_widget.addItem(item)                    # add the new item in the list
@@ -46,13 +42,21 @@ class DiagnosticsPanel(QGroupBox):
 
 
     def update_diagnostic_widget(self, address: str, status: dict) -> None:
-        log.info(f'Status at address {address} is {status}')
+
+        try:
+            diagnostic_widget = self.diagnostic_widgets[address]
+        except Exception as e :
+            log.error(f'self.diagnostic_widget[address] could not be accessed {e}')
+            return
+        try : 
+
+            diagnostic_widget.update_status_available(True)
+        except Exception as e:
+            log.error(f'Could not update position: {e}')
 
     def update_diagnostic_unavailable(self, address):
-        diagnostic_widgets = self.diagnostic_widgets.get(address)
-        log.debug(f'Diagnostic widgets: {diagnostic_widgets}')
-        for widget in diagnostic_widgets.values():
-            widget.update_status_available(False)
+        diagnostic_widget = self.diagnostic_widgets.get(address)
+        diagnostic_widget.update_status_available(False)
 
     def actions(self):
         pass

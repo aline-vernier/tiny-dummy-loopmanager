@@ -16,7 +16,7 @@ class DiagnosticControlWidget(QWidget):
     Define the diagnostic control line. 
     '''
 
-    def __init__(self, address: str, name: str, plottables: dict):
+    def __init__(self, address: str, status: dict):
         '''
             Args:
                 definition: 
@@ -27,10 +27,10 @@ class DiagnosticControlWidget(QWidget):
         super().__init__() # Inheritance from QWidget
         self.address = None
         self.name = None 
-        self.plottables = None
+        self.plottables_list = None
 
         try : 
-            self.define(address, name, plottables)
+            self.define(address, status)
         except Exception as e:
             log.error(f'Could not define diagnostic, invalid definition')
             log.error(f'Exception: {e}')
@@ -38,13 +38,13 @@ class DiagnosticControlWidget(QWidget):
         self.set_up()  # builds the input widget
         self.actions() # defines the actions of InputWidget
 
-    def define(self, address: str, name: str, plottables: dict):
+    def define(self, address: str, status: dict):
         if not validate_address(address):
             raise ValueError(f'{address} is not a valid address')
         else: 
             self.address = address
-            self.name = name
-            self.plottables = plottables
+            self.name = status['name']
+            self.plottables_list = status['plottables_list']
 
 
     def set_up(self) -> None:
@@ -87,8 +87,8 @@ class DiagnosticControlWidget(QWidget):
 
         # Plottables
         self.plottables_combobox = QComboBox()
-        for plottable_name in self.plottables:
-            self.plottables_combobox.addItem(plottable_name)
+        for plottable in self.plottables_list:
+            self.plottables_combobox.addItem(plottable)
             
         line_layout.addWidget(self.plottables_combobox)
 

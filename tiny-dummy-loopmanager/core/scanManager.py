@@ -97,8 +97,6 @@ class ScanManager(QObject):
         self.server_controller.set_actuators_dict_received.connect(
             self.on_actuators_dict_received
         ) 
-        log.info(f'Configure actuator callable')
-
         
         try: 
             self.server_controller.actuators_pos_update_received.connect(
@@ -118,10 +116,9 @@ class ScanManager(QObject):
         self.server_controller.set_diagnostics_dict_received.connect(
             self.on_diagnostics_dict_received
         ) 
-        log.info(f'Configure diagnostics callable')
 
-        
 
+    
 
     def start_scan(self):
         pass

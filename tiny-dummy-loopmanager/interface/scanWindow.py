@@ -124,7 +124,7 @@ class ScanWindow(QMainWindow):
         removed_addresses = set(self.actuators) - set(actuators_dict)
 
         for address in removed_addresses:
-            log.info(f'Motor server at {address} is no longer available')
+
             self.actuators_panel.update_actuators_unavailable(address)
 
 
@@ -149,8 +149,8 @@ class ScanWindow(QMainWindow):
         removed_addresses = set(self.diagnostics) - set(diagnostics_dict)
 
         for address in removed_addresses:
-            log.info(f'Diag server at {address} is no longer available')
-            #self.actuators_panel.update_actuators_unavailable(address)
+
+            self.diagnostics_panel.update_diagnostic_unavailable(address)
 
 
         # 2. Add new servers and update existing ones
@@ -158,7 +158,7 @@ class ScanWindow(QMainWindow):
             for address, status in diagnostics_dict.items():
 
                 if address in self.diagnostics:
-                    pass
+                    self.diagnostics_panel.update_diagnostic_widget(address, status)
 
                 else:
                     self.diagnostics[address] = status
