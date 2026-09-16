@@ -1,11 +1,13 @@
 # libraries
 import sys
 from PyQt6.QtWidgets import (
-    QGroupBox, QGridLayout, QVBoxLayout, QRadioButton,
-    QCheckBox, QLineEdit, QPushButton, QListWidget, QListWidgetItem,
-    QLabel, QFileDialog, QApplication
+    QGroupBox,QVBoxLayout,
+    QListWidget, QListWidgetItem,
+    QApplication
 )
-from PyQt6.QtCore import Qt, pyqtSignal
+
+
+
 from laplace_log import log
 
 # project
@@ -14,6 +16,7 @@ from ..widgets.actuator_control_widget import ActuatorControlWidget
 
 
 class ActuatorsPanel(QGroupBox):
+
 
     def __init__(self):        
         super().__init__("Actuators (motors, gas, etc.)")
@@ -29,6 +32,11 @@ class ActuatorsPanel(QGroupBox):
         panel_layout = QVBoxLayout(self)   # create the layout
         self.list_widget = QListWidget()   # create the widget list
         panel_layout.addWidget(self.list_widget)  # add the widget list to the layout
+        list_header = ActuatorControlWidget.make_header()
+
+        item = QListWidgetItem()
+        self.list_widget.addItem(item)
+        self.list_widget.setItemWidget(item, list_header)
 
     def update_actuator_widget(self, address: str, status: dict) -> None:
         for motor in status['motors']:
@@ -77,8 +85,22 @@ class ActuatorsPanel(QGroupBox):
         except Exception as e:
             log.error(f'Could not update position {e}')
 
-    def actions(self):
-        pass
+    def get_all_actuators_config(self) -> dict:
+        config = dict({})
+        for address, motor in self.actuator_widgets.items():
+            for name, widget in motor.items():
+                if widget.scan: 
+                    log.debug(f'Address: {address}, name: {name}')
+                    attr_dict = widget.get_attributes()
+                    config.setdefault(address, {})[name] = attr_dict
+                    
+                else: 
+                    log.info(f'{address}, {name} is set as not scanned')
+        log.info(f"config: {config}")
+        return config
+
+
+
 
 if __name__ == "__main__":
 

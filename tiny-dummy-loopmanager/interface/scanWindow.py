@@ -11,7 +11,7 @@ from laplace_log import log
 
 # project
 from .panels import (
-    ExecutionPanel, ActuatorsPanel, DiagnosticsPanel
+    ExecutionPanel, ActuatorsPanel, DiagnosticsPanel, ScanPanel
 )
 from ..core.scanManager import ScanManager
 
@@ -65,6 +65,10 @@ class ScanWindow(QMainWindow):
         self.diagnostics_panel = DiagnosticsPanel()
         main_layout.addWidget(self.diagnostics_panel)
 
+        # Block 4: Scan panel  (empty at startup)
+        self.scan_panel = ScanPanel()
+        main_layout.addWidget(self.scan_panel)
+
 
         # Block 5: Start and Stop buttons
         bottom_layout = QHBoxLayout()
@@ -106,6 +110,9 @@ class ScanWindow(QMainWindow):
             self.execution_panel.set_server_address
         )
 
+        # Signal from scan panel, asking to load scan settings from actuator panel
+        self.scan_panel.load_scan_config_signal.connect(self.load_scan_from_actuators)
+
         # Signal coming from scan manager, passed on from ServerController, 
         # emitted in callback function called by ServerLHC instance 
         self.scan_manager.on_actuators_dict_received.connect(
@@ -115,8 +122,6 @@ class ScanWindow(QMainWindow):
         self.scan_manager.on_diagnostics_dict_received.connect(
             self.update_diagnostics
         )
-
-
 
     def update_actuators(self, actuators_dict: dict) -> None:
 
@@ -168,33 +173,9 @@ class ScanWindow(QMainWindow):
         except Exception as e :
             log.error(f'Could not update diag GUI, error {e} occurred')
 
-        # removed_addresses = set(self.diagnostics) - set(diagnostics_dict)
-
-        # for address in removed_addresses:
-        #     log.debug(f'Diagnostic at {address} is no longer available')
-        #     self.diagnostics_panel.update_diagnostic_unavailable(address)
-
-        # if diagnostics_dict: 
-        #     address, name, plottables = format_plottable_data_dict(diagnostics_dict)
-        #     # plottables is a dictionary of format {'plottable_1':float, ..., 'plottable_n':float}
-        #     if plottables:
-        #         log.debug(f'Plottables {plottables}')
-           
-        #     # 2. Add new servers and update existing ones
-        #     try  :
-
-        #         if address in self.diagnostics:
-        #             self.diagnostics_panel.update_diagnostic_widget(address, True)
-
-        #         else:
-        #             self.diagnostics[address] = {'name': name, 'plottables': plottables}
-        #             log.info(f'Actuator plottables at {address} in scan window: {plottables}')
-        #             self.diagnostics_panel.add_diagnostic_widget(address, name, plottables)
-        #     except Exception as e :
-        #         log.error(f'Could not update actuator GUI, error {e} occurred')
-        # else:
-        #     pass
-
+    def load_scan_from_actuators(self)->None:
+        scan_config = self.actuators_panel.get_all_actuators_config()
+        self.scan_panel.load_scan_config(scan_config)
 
 
     def on_start(self) -> None:

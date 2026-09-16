@@ -1,22 +1,21 @@
 # libraries
 import sys
 from PyQt6.QtWidgets import (
-    QGroupBox, QGridLayout, QVBoxLayout, QRadioButton,
-    QCheckBox, QLineEdit, QPushButton, QListWidget, QListWidgetItem,
-    QLabel, QFileDialog, QApplication
+    QGroupBox, QVBoxLayout,
+    QListWidget, QListWidgetItem,
+    QApplication
 )
-from PyQt6.QtCore import Qt, pyqtSignal
 from laplace_log import log
 
 # project
-from ...utils.config_helper import get_from_config, set_in_config
+
 from ..widgets.diagnostic_control_widget import DiagnosticControlWidget
 
 
 class DiagnosticsPanel(QGroupBox):
 
     def __init__(self):        
-        super().__init__("Actuators (motors, gas, etc.)")
+        super().__init__("Diagnostics")
 
         self.diagnostic_widgets = dict({})
         self.set_up()  # build the elements

@@ -2,12 +2,16 @@
 import pathlib
 
 from PyQt6.QtWidgets import (
-    QWidget, QHBoxLayout, QCheckBox, QLabel, QDoubleSpinBox, QApplication
+    QWidget, QHBoxLayout, QCheckBox, 
+    QLabel, QDoubleSpinBox, QApplication, 
+    QAbstractSpinBox, QSpinBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 
 from ...utils.check_IP_address import validate_address
+from ...utils.widget_utils import (STATE_WIDTH, SCAN_WIDTH, RANK_WIDTH, 
+                                   ADDRESS_WIDTH, NAME_WIDTH, SPIN_WIDTH, UNIT_WIDTH)
 from laplace_log import log
 
 
@@ -25,6 +29,7 @@ class ActuatorControlWidget(QWidget):
         super().__init__() # Inheritance from QWidget
         self.address = None
         self.name = None 
+
 
         try : 
             self.define(address, name)
@@ -60,29 +65,16 @@ class ActuatorControlWidget(QWidget):
 
         # state icon
         self.state_icon = QLabel()                                     
-        self.state_icon.setFixedWidth(20)
+        self.state_icon.setFixedWidth(STATE_WIDTH)
         self.state_icon.setPixmap(self.disconnected_icon.pixmap(16, 16)) 
         self.state_icon.setToolTip("Current state")
         line_layout.addWidget(self.state_icon)
-
-        # scan
-        self.scan_checkbox = QCheckBox()
-        self.scan_checkbox.setToolTip(f"Check this box to scan")
-        self.scan_checkbox.setFixedWidth(20)
-        line_layout.addWidget(self.scan_checkbox)
-
-        # scanning rank
-        self.rank_input =  QDoubleSpinBox()
-        self.rank_input.setMinimum(0)
-        self.rank_input.setMaximum(10)
-        self.rank_input.setFixedWidth(70)
-        self.rank_input.setToolTip(f"Rank 0 outer, rank 1 inner - defined as in a for loop")
-        line_layout.addWidget(self.rank_input)
 
         # ip_port
         self.address_label = QLabel()
         self.address_label.setText(self.address or "Unknown")
         self.address_label.setEnabled(False)
+        self.address_label.setFixedWidth(ADDRESS_WIDTH)
         self.address_label.setToolTip("Actuator IP:port")
         line_layout.addWidget(self.address_label)
 
@@ -90,50 +82,143 @@ class ActuatorControlWidget(QWidget):
         self.name_label = QLabel()
         self.name_label.setText(self.name or "Unknown")
         self.name_label.setEnabled(False)
+        self.name_label.setFixedWidth(NAME_WIDTH)
         self.name_label.setToolTip("Actuator name")
         line_layout.addWidget(self.name_label)
 
         # position 
-
         self.current_pos_spin = QDoubleSpinBox()
-        self.current_pos_spin.setDecimals(6)
+        self.current_pos_spin.setButtonSymbols(
+            QAbstractSpinBox.ButtonSymbols.NoButtons
+            )
+        self.current_pos_spin.setDecimals(3)
         self.current_pos_spin.setEnabled(False)
-        self.current_pos_spin.setFixedWidth(70)
-        self.current_pos_spin.setToolTip("Lower bound")
+        self.current_pos_spin.setFixedWidth(SPIN_WIDTH)
+        self.current_pos_spin.setToolTip("Current position")
         line_layout.addWidget(self.current_pos_spin)
 
         # Min spinBox
         self.min_spin = QDoubleSpinBox()
-        self.min_spin.setDecimals(6)
-        self.min_spin.setEnabled(False)
-        self.min_spin.setFixedWidth(70)
+        self.min_spin.setDecimals(3)
+        self.min_spin.setEnabled(True)
+        self.min_spin.setFixedWidth(SPIN_WIDTH)
         self.min_spin.setToolTip("Lower bound")
         line_layout.addWidget(self.min_spin)
 
         # Max spinBox
         self.max_spin = QDoubleSpinBox()
-        self.max_spin.setDecimals(6)
-        self.max_spin.setEnabled(False)
-        self.max_spin.setFixedWidth(70)
+        self.max_spin.setDecimals(3)
+        self.max_spin.setEnabled(True)
+        self.max_spin.setFixedWidth(SPIN_WIDTH)
         self.max_spin.setToolTip("Higher bound")
         line_layout.addWidget(self.max_spin)
 
         # Stepsize spinBox
         self.stepsize_spin = QDoubleSpinBox()
-        self.stepsize_spin.setDecimals(6)
+        self.stepsize_spin.setDecimals(3)
         self.stepsize_spin.setEnabled(False)
-        self.stepsize_spin.setFixedWidth(70)
+        self.stepsize_spin.setFixedWidth(SPIN_WIDTH)
         self.stepsize_spin.setToolTip("Step size")
         line_layout.addWidget(self.stepsize_spin)
 
         # Unit
         self.unit_label = QLabel()
         self.unit_label.setText("Unknown")
-        self.unit_label.setFixedWidth(60)
+        self.unit_label.setFixedWidth(UNIT_WIDTH)
         self.unit_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.unit_label.setToolTip("Input unit")
         line_layout.addWidget(self.unit_label)
 
+        # scanning rank
+        self.rank_input =  QSpinBox()
+        self.rank_input.setMinimum(0)
+        self.rank_input.setMaximum(10)
+        self.rank_input.setButtonSymbols(
+                    QAbstractSpinBox.ButtonSymbols.NoButtons
+                    )
+        self.rank_input.setFixedWidth(RANK_WIDTH)
+        self.rank_input.setToolTip(f"Rank 0 outer, rank 1 inner - defined as in a for loop")
+        line_layout.addWidget(self.rank_input)
+
+        # scan
+        self.scan_checkbox = QCheckBox()
+        self.scan_checkbox.setToolTip(f"Check this box to scan")
+        self.scan_checkbox.setFixedWidth(SCAN_WIDTH)
+        line_layout.addWidget(self.scan_checkbox)
+
+    @staticmethod
+    def make_header() -> QWidget:
+        header_widget = QWidget()
+
+        line_layout = QHBoxLayout(header_widget)
+        line_layout.setContentsMargins(4, 2, 4, 2)
+        line_layout.setSpacing(8)
+
+        # State
+        status_label = QLabel("State")
+        status_label.setFixedWidth(STATE_WIDTH)
+        status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+   
+        # Scan
+        scan_label = QLabel("Scan")
+        scan_label.setFixedWidth(SCAN_WIDTH)
+        scan_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Rank
+        rank_label = QLabel("Rank")
+        rank_label.setFixedWidth(RANK_WIDTH)
+        rank_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Address
+        address_label = QLabel("IP:port")
+        address_label.setFixedWidth(ADDRESS_WIDTH)
+
+        # Name
+        name_label = QLabel("Name")
+        name_label.setFixedWidth(NAME_WIDTH)
+
+        # Current position
+        current_label = QLabel("Current")
+        current_label.setFixedWidth(SPIN_WIDTH)
+        current_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Minimum
+        min_label = QLabel("Min")
+        min_label.setFixedWidth(SPIN_WIDTH)
+        min_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+
+        # Maximum
+        max_label = QLabel("Max")
+        max_label.setFixedWidth(SPIN_WIDTH)
+        max_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Step
+        step_label = QLabel("Step")
+        step_label.setFixedWidth(SPIN_WIDTH)
+        step_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Unit
+        unit_label = QLabel("Unit")
+        unit_label.setFixedWidth(UNIT_WIDTH)
+        unit_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        line_layout.addWidget(status_label)
+        line_layout.addWidget(address_label)
+        line_layout.addWidget(name_label)
+        line_layout.addWidget(current_label)
+        line_layout.addWidget(min_label)
+        line_layout.addWidget(max_label)
+        line_layout.addWidget(step_label)
+        line_layout.addWidget(unit_label)
+        line_layout.addWidget(rank_label)
+        line_layout.addWidget(scan_label)
+
+        return header_widget
+
+    @property
+    def scan(self):
+        return self.scan_checkbox.isChecked()
 
     def actions(self) -> None:
         '''
@@ -142,13 +227,7 @@ class ActuatorControlWidget(QWidget):
         # when the input state is changed, change the icon and enable / disable the spin boxes
         self.scan_checkbox.stateChanged.connect(self.on_state_changed)
         
-        # when the spin boxes are updated, change the input instance boundaries
-        self.min_spin.valueChanged.connect(self.update_instance_bounds)
-        self.max_spin.valueChanged.connect(self.update_instance_bounds)
 
-        # when the spin boxes are updated, change the spin boxes range
-        self.min_spin.valueChanged.connect(self.update_min_max)
-        self.max_spin.valueChanged.connect(self.update_min_max)
 
     def update_position(self, position: float)-> None:
         self.current_pos_spin.setValue(position)
@@ -159,24 +238,21 @@ class ActuatorControlWidget(QWidget):
         else:
             self.state_icon.setPixmap(self.disconnected_icon.pixmap(16, 16)) 
 
+    def get_attributes(self)->dict:
+        attr_dict = dict({})
+        attr_dict['current'] = self.current_pos_spin.value()
+        attr_dict['start'] = self.min_spin.value()
+        attr_dict['stop'] = self.min_spin.value()
+        attr_dict['step'] = self.stepsize_spin.value()
+        attr_dict['rank'] = self.rank_input.value()
+        return attr_dict
+
         
     def on_state_changed(self, enabled: bool) -> None:
         '''
         '''
         pass
 
-
-    def update_instance_bounds(self) -> None:
-        '''
-        Update the boundaries in the class instance.
-        '''
-        pass
-
-    def update_min_max(self) -> None:
-        '''
-        Update the min and max values of the spin boxes.
-        '''
-        pass
 
 
 
