@@ -22,9 +22,9 @@ class ScanPanel(QGroupBox):
     def set_up(self) -> None:
 
         self.scan_table = QTableWidget()
-        self.scan_table.setColumnCount(5)
+        self.scan_table.setColumnCount(6)
         self.scan_table.setHorizontalHeaderLabels(
-            ["Rank", "Control", "Range", "Step", "Points"]
+            ["Rank", "Address", "Control", "Range", "Step", "Points"]
         )
 
         self.total_points_label = QLabel("0 points")
@@ -50,67 +50,69 @@ class ScanPanel(QGroupBox):
 
     def load_scan_config(self, settings: dict) -> None:
         """Load scan settings into the scan table."""
-
+        
         self.scan_table.setRowCount(0)
-
         total_points = 1
-
-        # Sort by scan rank
-        sorted_settings = sorted(
-            settings.items(),
-            key=lambda item: item[1]["rank"]
-        )
-
-        for name, scan in sorted_settings:
-            current = scan["current"]
-            start = scan["min"]
-            stop = scan["max"]
-            spacing = scan["step"]
-            rank = scan["rank"]
-
-            # Number of positions, including both endpoints.
-            if spacing != 0:
-                points = int(round((stop - start) / spacing)) + 1
-            else:
-                points = 1
-
-            total_points *= points
-
-            row = self.scan_table.rowCount()
-            self.scan_table.insertRow(row)
-
-            # Rank
-            self.scan_table.setItem(
-                row, 0,
-                QTableWidgetItem(str(rank))
+        for address, controls in settings.items():
+            sorted_controls = sorted(
+                controls.items(),
+                key=lambda item: item[1]['rank']
             )
+            for name, scan in sorted_controls:
+                current = scan['current']
+                start = scan['start']
+                stop = scan['stop']
+                spacing = scan['step']
+                rank = scan['rank']
 
-            # Control name
-            self.scan_table.setItem(
-                row, 1,
-                QTableWidgetItem(name)
-            )
+                # Number of positions, including both endpoints.
+                if spacing != 0:
+                    points = int(round((stop - start) / spacing)) + 1
+                else:
+                    points = 1
+                total_points *= points
 
-            # Range
-            range_text = f"{start:g} → {stop:g}"
-            self.scan_table.setItem(
-                row, 2,
-                QTableWidgetItem(range_text)
-            )
+                row = self.scan_table.rowCount()
+                self.scan_table.insertRow(row)
 
-            # Spacing
-            spacing_text = f"{spacing:g}"
-            self.scan_table.setItem(
-                row, 3,
-                QTableWidgetItem(spacing_text)
-            )
+                # Rank
+                self.scan_table.setItem(
+                    row, 0,
+                    QTableWidgetItem(str(rank))
+                )
 
-            # Number of points
-            self.scan_table.setItem(
-                row, 4,
-                QTableWidgetItem(str(points))
-            )
+                # Address
+                self.scan_table.setItem(
+                    row, 1,
+                    QTableWidgetItem(str(address))
+                )
 
+        #        # Control name
+                self.scan_table.setItem(
+                    row, 2,
+                    QTableWidgetItem(name)
+                )
+
+        #         # Range
+                range_text = f"{start:g} → {stop:g}"
+                self.scan_table.setItem(
+                    row, 3 ,
+                    QTableWidgetItem(range_text)
+                )
+
+        #         # Spacing
+                spacing_text = f"{spacing:g}"
+                self.scan_table.setItem(
+                    row, 4,
+                    QTableWidgetItem(spacing_text)
+                )
+
+        #         # Number of points
+                self.scan_table.setItem(
+                    row, 5,
+                    QTableWidgetItem(str(points))
+                )
+     
         self.total_points_label.setText(
             f"{total_points:,} scan points"
         )

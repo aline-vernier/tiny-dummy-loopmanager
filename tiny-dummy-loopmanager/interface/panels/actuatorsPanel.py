@@ -96,7 +96,7 @@ class ActuatorsPanel(QGroupBox):
                     
                 else: 
                     log.info(f'{address}, {name} is set as not scanned')
-        log.info(f"config: {config}")
+
         return config
 
 

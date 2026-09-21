@@ -116,7 +116,7 @@ class ActuatorControlWidget(QWidget):
         # Stepsize spinBox
         self.stepsize_spin = QDoubleSpinBox()
         self.stepsize_spin.setDecimals(3)
-        self.stepsize_spin.setEnabled(False)
+        self.stepsize_spin.setEnabled(True)
         self.stepsize_spin.setFixedWidth(SPIN_WIDTH)
         self.stepsize_spin.setToolTip("Step size")
         line_layout.addWidget(self.stepsize_spin)
@@ -242,9 +242,10 @@ class ActuatorControlWidget(QWidget):
         attr_dict = dict({})
         attr_dict['current'] = self.current_pos_spin.value()
         attr_dict['start'] = self.min_spin.value()
-        attr_dict['stop'] = self.min_spin.value()
+        attr_dict['stop'] = self.max_spin.value()
         attr_dict['step'] = self.stepsize_spin.value()
         attr_dict['rank'] = self.rank_input.value()
+        log.info(f'Attributes for {self.address}, {self.name}: {attr_dict}')
         return attr_dict
 
         
