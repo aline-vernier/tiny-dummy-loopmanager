@@ -20,7 +20,7 @@ class ActuatorControlWidget(QWidget):
     Define the actuator control line. 
     '''
 
-    def __init__(self, address: str, name: str):
+    def __init__(self, address: str, name: str, index: int):
         '''
             Args:
                 definition: (dict)
@@ -29,10 +29,11 @@ class ActuatorControlWidget(QWidget):
         super().__init__() # Inheritance from QWidget
         self.address = None
         self.name = None 
+        self.index = None
 
 
         try : 
-            self.define(address, name)
+            self.define(address, name, index)
         except Exception as e:
             log.error(f'Could not define actuator, invalid definition')
             log.error(f'Exception: {e}')
@@ -40,12 +41,13 @@ class ActuatorControlWidget(QWidget):
         self.set_up()  # builds the input widget
         self.actions() # defines the actions of InputWidget
 
-    def define(self, address: str, name: str):
+    def define(self, address: str, name: str, index: int):
         if not validate_address(address):
             raise ValueError(f'{address} is not a valid address')
         else: 
             self.address = address
             self.name = name
+            self.index = index
 
 
     def set_up(self) -> None:
@@ -77,6 +79,14 @@ class ActuatorControlWidget(QWidget):
         self.address_label.setFixedWidth(ADDRESS_WIDTH)
         self.address_label.setToolTip("Actuator IP:port")
         line_layout.addWidget(self.address_label)
+
+        # index_label
+        self.index_label =  QLabel()
+        self.index_label.setText(str(self.index))
+        self.index_label.setEnabled(False)
+        self.index_label.setFixedWidth(RANK_WIDTH)
+        self.index_label.setToolTip("Index")
+        line_layout.addWidget(self.index_label)
 
         # name
         self.name_label = QLabel()
@@ -173,6 +183,10 @@ class ActuatorControlWidget(QWidget):
         address_label = QLabel("IP:port")
         address_label.setFixedWidth(ADDRESS_WIDTH)
 
+        # Motor Index
+        index_label = QLabel("Index")
+        index_label.setFixedWidth(RANK_WIDTH)
+
         # Name
         name_label = QLabel("Name")
         name_label.setFixedWidth(NAME_WIDTH)
@@ -205,6 +219,7 @@ class ActuatorControlWidget(QWidget):
 
         line_layout.addWidget(status_label)
         line_layout.addWidget(address_label)
+        line_layout.addWidget(index_label)
         line_layout.addWidget(name_label)
         line_layout.addWidget(current_label)
         line_layout.addWidget(min_label)
@@ -245,6 +260,8 @@ class ActuatorControlWidget(QWidget):
         attr_dict['stop'] = self.max_spin.value()
         attr_dict['step'] = self.stepsize_spin.value()
         attr_dict['rank'] = self.rank_input.value()
+        attr_dict['index'] = int(self.index_label.text())
+    
         log.info(f'Attributes for {self.address}, {self.name}: {attr_dict}')
         return attr_dict
 

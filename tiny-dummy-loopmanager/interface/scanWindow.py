@@ -113,6 +113,9 @@ class ScanWindow(QMainWindow):
         # Signal from scan panel, asking to load scan settings from actuator panel
         self.scan_panel.load_scan_config_signal.connect(self.load_scan_from_actuators)
 
+        # Signal from scan panel, asking to start the scan
+        self.scan_panel.start_scan_signal.connect(self.scan_manager.start_scan)
+
         # Signal coming from scan manager, passed on from ServerController, 
         # emitted in callback function called by ServerLHC instance 
         self.scan_manager.on_actuators_dict_received.connect(

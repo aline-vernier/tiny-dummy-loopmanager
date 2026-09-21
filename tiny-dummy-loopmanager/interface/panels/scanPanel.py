@@ -12,12 +12,15 @@ from laplace_log import log
 
 class ScanPanel(QGroupBox):
     load_scan_config_signal = pyqtSignal()
+    start_scan_signal = pyqtSignal(dict)
+    stop_scan_signal = pyqtSignal()
 
     def __init__(self):        
         super().__init__("Scan config")
 
         self.set_up()  # build the elements
         self.actions() # defines the panel actions
+        self.scan_settings = dict({})
 
     def set_up(self) -> None:
 
@@ -47,6 +50,15 @@ class ScanPanel(QGroupBox):
     def actions(self):
         # click load button to emit signal caught by ScanWindow
         self.load_button.clicked.connect(self.load_scan_config_signal)
+        self.start_button.clicked.connect(self.start_scan)
+        #self.stop_button.clicked.connect(self.stop_scan_signal)
+
+    def start_scan(self):
+        """Emit the start_scan_signal with the current scan settings."""
+        if self.scan_settings:
+            self.start_scan_signal.emit(self.scan_settings)
+        else:
+            log.warning("No scan settings available to start the scan.")
 
     def load_scan_config(self, settings: dict) -> None:
         """Load scan settings into the scan table."""
@@ -58,6 +70,7 @@ class ScanPanel(QGroupBox):
                 controls.items(),
                 key=lambda item: item[1]['rank']
             )
+            self.scan_settings[address] = sorted_controls
             for name, scan in sorted_controls:
                 current = scan['current']
                 start = scan['start']

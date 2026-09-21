@@ -120,8 +120,9 @@ class ScanManager(QObject):
 
     
 
-    def start_scan(self):
-        pass
+    def start_scan(self, scan_settings: dict) -> None:
+        log.info(f'Starting scan with settings: {scan_settings}')
+        self.serv.set_data(scan_settings)
 
     def stop_scan(self):
         pass
