@@ -20,7 +20,7 @@ class ActuatorControlWidget(QWidget):
     Define the actuator control line. 
     '''
 
-    def __init__(self, address: str, name: str, index: int):
+    def __init__(self, address: str, name: str, index: int, motor_count: int):
         '''
             Args:
                 definition: (dict)
@@ -30,7 +30,7 @@ class ActuatorControlWidget(QWidget):
         self.address = None
         self.name = None 
         self.index = None
-
+        self.motor_count = motor_count
 
         try : 
             self.define(address, name, index)
@@ -261,6 +261,8 @@ class ActuatorControlWidget(QWidget):
         attr_dict['step'] = self.stepsize_spin.value()
         attr_dict['rank'] = self.rank_input.value()
         attr_dict['index'] = int(self.index_label.text())
+        attr_dict['motor count'] = self.motor_count
+
     
         log.info(f'Attributes for {self.address}, {self.name}: {attr_dict}')
         return attr_dict

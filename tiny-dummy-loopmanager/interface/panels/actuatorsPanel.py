@@ -17,7 +17,6 @@ from ..widgets.actuator_control_widget import ActuatorControlWidget
 
 class ActuatorsPanel(QGroupBox):
 
-
     def __init__(self):        
         super().__init__("Actuators (motors, gas, etc.)")
 
@@ -66,18 +65,21 @@ class ActuatorsPanel(QGroupBox):
                     
 
     def add_actuator_widgets_from_status(self, address: str, status: dict) -> None:
+        motors = status['motors']
+        motor_count = len(motors)
 
         for index, motor in enumerate(status['motors']):
             self.add_actuator_widget(
                 address,
                 motor['name'],
                 index,
-                motor['position']
+                motor['position'], 
+                motor_count=motor_count
             )
             
 
-    def add_actuator_widget(self, address: str, name: str, index: int, position: float):
-        new_widget = ActuatorControlWidget(address=address, name=name, index=index)
+    def add_actuator_widget(self, address: str, name: str, index: int, position: float, motor_count):
+        new_widget = ActuatorControlWidget(address=address, name=name, index=index, motor_count= motor_count)
 
         self.actuator_widgets.setdefault(address, {})[name] = new_widget
         item = QListWidgetItem(self.list_widget)          # create a new list item
